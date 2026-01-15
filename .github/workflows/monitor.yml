@@ -23,22 +23,21 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Restore state from cache
-        uses: actions/cache/restore@v4
+      - name: Cache state file
+        uses: actions/cache@v4
         with:
           path: /tmp/deepseek_monitor_state.json
-          key: monitor-state
+          key: monitor-state-${{ github.run_id }}
           restore-keys: |
-            monitor-state
+            monitor-state-
 
-      - name: Check state file
+      - name: Check state before run
         run: |
-          echo "=== Checking for state file ==="
+          echo "=== State before run ==="
           if [ -f /tmp/deepseek_monitor_state.json ]; then
-            echo "✓ State file found"
-            wc -l /tmp/deepseek_monitor_state.json
+            echo "✓ State file found with $(wc -l < /tmp/deepseek_monitor_state.json) lines"
           else
-            echo "✗ No state file found (first run)"
+            echo "✗ No state file (first run or cache miss)"
           fi
 
       - name: Run monitor
@@ -54,13 +53,7 @@ jobs:
           echo "=== State after run ==="
           if [ -f /tmp/deepseek_monitor_state.json ]; then
             echo "✓ State file exists with $(wc -l < /tmp/deepseek_monitor_state.json) lines"
+            head -5 /tmp/deepseek_monitor_state.json
           else
             echo "✗ State file missing"
           fi
-
-      - name: Save state to cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: /tmp/deepseek_monitor_state.json
-          key: monitor-state
