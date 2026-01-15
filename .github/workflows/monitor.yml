@@ -53,9 +53,22 @@ jobs:
         run: |
           python monitor.py
 
+      - name: Check state after run
+        if: always()
+        run: |
+          echo "=== Checking state file after monitor run ==="
+          if [ -f /tmp/deepseek_monitor_state.json ]; then
+            echo "✓ State file exists"
+            wc -l /tmp/deepseek_monitor_state.json
+          else
+            echo "✗ State file missing - this is the problem!"
+          fi
+
       - name: Upload state
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: monitor-state
           path: /tmp/deepseek_monitor_state.json
           retention-days: 90
+          if-no-files-found: warn
