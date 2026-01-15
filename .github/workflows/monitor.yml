@@ -33,13 +33,17 @@ jobs:
 
       - name: Check state file
         run: |
-          echo "Checking for existing state file..."
+          echo "=== Checking /tmp directory ==="
           ls -la /tmp/
+          echo ""
+          echo "=== Checking for state file ==="
           if [ -f /tmp/deepseek_monitor_state.json ]; then
-            echo "State file exists!"
-            head -20 /tmp/deepseek_monitor_state.json
+            echo "✓ State file found at /tmp/deepseek_monitor_state.json"
+            echo "Content preview:"
+            head -30 /tmp/deepseek_monitor_state.json
           else
-            echo "No state file found (first run)"
+            echo "✗ No state file found"
+            echo "This will cause all items to be treated as new!"
           fi
 
       - name: Run monitor
