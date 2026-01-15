@@ -23,27 +23,22 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Download previous state
-        id: download
-        continue-on-error: true
-        uses: actions/download-artifact@v4
+      - name: Restore state from cache
+        uses: actions/cache/restore@v4
         with:
-          name: monitor-state
-          path: /tmp
+          path: /tmp/deepseek_monitor_state.json
+          key: monitor-state
+          restore-keys: |
+            monitor-state
 
       - name: Check state file
         run: |
-          echo "=== Checking /tmp directory ==="
-          ls -la /tmp/
-          echo ""
           echo "=== Checking for state file ==="
           if [ -f /tmp/deepseek_monitor_state.json ]; then
-            echo "✓ State file found at /tmp/deepseek_monitor_state.json"
-            echo "Content preview:"
-            head -30 /tmp/deepseek_monitor_state.json
+            echo "✓ State file found"
+            wc -l /tmp/deepseek_monitor_state.json
           else
-            echo "✗ No state file found"
-            echo "This will cause all items to be treated as new!"
+            echo "✗ No state file found (first run)"
           fi
 
       - name: Run monitor
@@ -56,19 +51,16 @@ jobs:
       - name: Check state after run
         if: always()
         run: |
-          echo "=== Checking state file after monitor run ==="
+          echo "=== State after run ==="
           if [ -f /tmp/deepseek_monitor_state.json ]; then
-            echo "✓ State file exists"
-            wc -l /tmp/deepseek_monitor_state.json
+            echo "✓ State file exists with $(wc -l < /tmp/deepseek_monitor_state.json) lines"
           else
-            echo "✗ State file missing - this is the problem!"
+            echo "✗ State file missing"
           fi
 
-      - name: Upload state
+      - name: Save state to cache
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/cache/save@v4
         with:
-          name: monitor-state
           path: /tmp/deepseek_monitor_state.json
-          retention-days: 90
-          if-no-files-found: warn
+          key: monitor-state
