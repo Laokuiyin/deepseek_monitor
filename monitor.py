@@ -30,9 +30,16 @@ def load_state() -> Dict:
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r") as f:
-                return json.load(f)
-        except Exception:
+                state = json.load(f)
+                repo_count = len(state.get("repos", []))
+                release_count = sum(len(v) for v in state.get("releases", {}).values())
+                tag_count = sum(len(v) for v in state.get("tags", {}).values())
+                print(f"[State] Loaded existing state: {repo_count} repos, {release_count} releases, {tag_count} tags")
+                return state
+        except Exception as e:
+            print(f"[State] Failed to load state: {e}")
             pass
+    print("[State] No existing state found, starting fresh")
     return {"repos": [], "releases": {}, "tags": {}}
 
 
