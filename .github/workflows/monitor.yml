@@ -27,9 +27,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/deepseek_monitor_state.json
-          key: monitor-state-${{ github.run_id }}
+          key: monitor-state
           restore-keys: |
-            monitor-state-
+            monitor-state
 
       - name: Check state before run
         run: |
