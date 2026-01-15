@@ -1,0 +1,45 @@
+name: DeepSeek GitHub Monitor
+
+on:
+  schedule:
+    # Run every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Download previous state
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: monitor-state
+          path: /tmp
+
+      - name: Run monitor
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python monitor.py
+
+      - name: Upload state
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-state
+          path: /tmp/deepseek_monitor_state.json
+          retention-days: 90
