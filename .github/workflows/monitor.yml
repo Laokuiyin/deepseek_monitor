@@ -3,7 +3,7 @@ name: DeepSeek GitHub Monitor
 on:
   schedule:
     # Run every 30 minutes
-    - cron: '*/30 * * * *'
+    - cron: '* 4 * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
